@@ -1,0 +1,17 @@
+.App {
+  font-family: sans-serif;
+}
+button {
+  background: lightgreen;
+  border: 1px solid green;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 1em;
+}
+
+button:hover {
+  background: green;
+  color: white;
+  box-shadow: 1px 1px 1px #999999;
+  cursor: pointer;
+}
