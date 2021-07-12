@@ -1,6 +1,8 @@
 const state = {
   users: [],
-  isLoading: false
+  isLoading: false,
+  editedUsers: {},
+  Users: {},
 };
 
 export default state;

@@ -3,6 +3,8 @@ export const GET_USERS_SUCCESS = "GET_USERS_SUCCESS";
 export const DELETE_USERS = "DELETE_USERS";
 export const EDIT_USERS = "EDIT_USERS";
 export const FAVORITE_USERS = "FAVORITE_USERS";
+export const USERS = "USERS";
+export const EDITED_USERS = "EDITED_USERS";
 
 export const getUsers = () => {
   return {
@@ -31,6 +33,18 @@ export const editUsers = users => {
 export const favoriteUsers = users => {
   return {
     type: FAVORITE_USERS,
+    users
+  };
+};
+export const Users = users => {
+  return {
+    type: USERS,
+    users
+  };
+};
+export const editedUsers = users => {
+  return {
+    type: EDITED_USERS,
     users
   };
 };
