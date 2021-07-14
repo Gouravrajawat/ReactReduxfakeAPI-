@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
-import { deleteUsers, editUsers, favoriteUsers, editedUsers } from "./actions";
-import { Button } from "react-bootstrap";
+import { deleteUsers, editUsers, favoriteUsers, editedUsers, getUsersSuccess, Users } from "./actions";
+import { Button, Form } from "react-bootstrap";
 import './index.css';
+//import { useHistory} from 'react-router-dom';
 //import PublicRoute from "./routes/PublicRoute";
-//import { useHistory } from 'react-router-dom';
 
 
 class App extends Component {
@@ -14,22 +14,31 @@ class App extends Component {
       users: [],
       isLoading: false,
       isError: false,
-      editUsers1: '',
+      editUsers: false,
       userToEdit: {},
-    }
+      Edit: false,
+      user: {},
+    };
+    this.onChange = this.onChange.bind(this);
+    this.handleChange = this.handleChange.bind(this);
   }
+  onChange(e) {
+    this.setState({ [e.target.name]: e.target.value });
+  }
+
   async componentDidMount() {
     this.setState({ isLoading: true })
     const response = await fetch('https://jsonplaceholder.typicode.com/users')
     if (response.ok) {
       const users = await response.json()
+      this.props.getUsersSuccess(users)
       this.setState({ users, isLoading: false })
     } else {
       this.setState({ isError: true, isLoading: false })
       this.setState({
-        editUsers: true
+        userToEdit: true
       })
-      this.props.history.push("/edit/:id")
+      this.props.history.push("/edit")
     }
   }
   renderTableHeader = () => {
@@ -51,7 +60,7 @@ class App extends Component {
             {user.favorite ? <span class="glyphicon">&#xe005;</span> : 'Add to favorite'}
           </td>
           <td>
-            <Button variant="info" onClick={() => this.editUsers(user.id)}>Edit</Button>
+            <Button variant="info" onClick={() => this.userToEdit(user.id)}>Edit</Button>
             &nbsp;<Button variant="danger" onClick={() => this.deleteUsers(user.id)}>Delete</Button>
             &nbsp;
             <Button variant="success" onClick={() => this.favoriteUsers(user.id)}> Add to Favorite</Button>
@@ -60,28 +69,6 @@ class App extends Component {
       )
     })
   }
-  // Users = () => {
-  //    return Object.keys(this.state.user[0]).map(attr => <th key={attr}>{attr.toUpperCase()}</th>)
-  //  }
-
-  /* Users = () => {
-     return this.state.users.map(user => {
-       return (
-         <input key={user.id}>
-           <input type={user.id} />
-           <input type={user.name} />
-           <input type={user.username} />
-           <input type={user.email} />
-           <input type={`${user.address.street}, ${user.address.city}`} />
-           <input type={user.phone} />
-           <input type={user.website} />
-           <input type={user.company.name} />
-           <Button variant="info" onClick={() => this.Users()}>Save</Button>
-         </input>
-       )
-     })
-   }
-   */
 
   deleteUsers(userid) {
     const { users } = this.state;
@@ -89,108 +76,27 @@ class App extends Component {
       users: users.filter((user => user.id !== userid))
     })
   }
-  editUsers = (userid) => {
+
+
+  editedUsers = (userid) => {
     const { users } = this.state;
     this.setState({
-      users: users.find((user => user.id === userid))
+      users: users.find((user => user.id === user.id))
     })
-    const user = users.find((user => user.id === userid))
-    // console.log(user, 'user')
+  }
+
+
+  userToEdit = id => {
+    const { users } = this.state;
+    this.setState({
+      users: users.find((user => user.id === id))
+    })
+    const user = users.find((user => user.id === id))
     user.edit = true
     this.setState({
-      userToEdit: user
+      editedUsers: users,
     })
   }
-  /*Users = () => {
-    const { users } = this.state;
-    this.setState({
-      users: users.find((users))
-    })
-    const user = users.find((Users))
-    console.log(user, 'users')
-    user.edit = true
-    this.setState({
-      userToEdit: users
-    })
-  }
-*/
-
-
-  editedUsers = () => {
-    const { users } = this.state;
-    this.setState({
-      users: users.find((user => user === user))
-    })
-  }
-
-  /*
-  editUsers = (userid) => {
-    const users = this.state.users.find(user => user.id === userid);
-    return users;
-  }
-  onEdit = (userid) => {
-    const user = this.state.users;
-    const index = user.indexOf(this.editUsers(userid))
-    const selectedUsers = user[index];
-    this.setState({
-      //  id: selectedUsers[user.id]
-    })
-  }
-  */
-
-  /* editUsers = userid => {
-     const { users } = this.state;
-     this.setState({
-       users: users.find((user => user.id === userid))
-     })
-     const user = users.find((user => user.id === userid))
-     // console.log(user, 'user')
-     user.edit = true
-     this.setState({
-       userToEdit: users
-     })
-   }
-   */
-  /*  editUsers1 = userid => {
-      const { users } = this.state;
-      this.setState({
-        users: users.find((user => user.id === userid))
-      })
-      const user = users.find((user => user.id === user.id))
-      this.setState({
-        users: user
-      })
-    }
-    */
-
-
-  /* editUsers = userid => {
-   const { users } = this.state;
-   const apiUrl = 'https://jsonplaceholder.typicode.com/users';
-   const formData = new FormData();
-   formData.append('userid', userid);
- 
-   const options = {
-     method: 'POST',
-     body: formData,
-     userid: userid
-   }
- 
-   fetch(apiUrl, options)
-     .then(res => res.json())
-     .then(
-       (result) => {
-         this.setState({
-           user: result,
-           editUsers: true,
-         });
-       },
-       (error) => {
-         this.setState({ error });
-       }
-     )
- }
- */
 
   favoriteUsers = userid => {
     const { users } = this.state;
@@ -207,6 +113,21 @@ class App extends Component {
       users: users
     })
   }
+  handleChange(e) {
+    const target = e.target;
+    const value = e.value
+    //  const users = e.target.users;
+
+    this.setState({
+      ...this.state,
+      userToEdit: { ...this.state.userToEdit, [target.name]: value }
+      //  [users]: value,
+      //  editedUsers: users
+    });
+  }
+
+
+
   render() {
     const { users, isLoading, isError } = this.state
     console.log('users', users)
@@ -231,21 +152,73 @@ class App extends Component {
           </tbody>
         </table>
       ) : (
-        <div>
-          No users
+        <div
+          style={{ fontSize: 16, backgroundColor: "	silver", width: "50%", paddingLeft: "40px", marginleft: "40px" }}>
+          <Form.Group>
+            <Form.Label>ID</Form.Label>
+            <Form.Control
+              type="text"
+              value={this.state.users.id}
+              required
+              onChange={this.handleChange}
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>Name</Form.Label>
+            <Form.Control
+              type="text"
+              value={this.state.users.name}
+              required
+              onChange={this.handleChange}
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>userName</Form.Label>
+            <Form.Control
+              type="text"
+              value={this.state.users.username}
+              required
+              onChange={this.handleChange}
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              type="text"
+              value={this.state.users.email}
+              required
+              onChange={this.handleChange}
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>Phone</Form.Label>
+            <Form.Control
+              type="text"
+              value={this.state.users.phone}
+              required
+              onChange={this.handleChange}
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Label>Website</Form.Label>
+            <Form.Control
+              type="text"
+              value={this.state.users.website}
+              required
+              onChange={this.handleChange}
+            />
+          </Form.Group>
+          <Button variant="success" type="submit">Save</Button>
         </div>
       )
   }
 }
 const mapStateToProps = (state, props) => {
   return {
-    user: state.users.find((user) =>
-      user.id === props.match.params.id)
-    //  user: state.editedUsers.find(user => user.id === props.match.params.id)
+    user: state.users && state.users.find((user) =>
+      props.match && user.id === props.match.params.id)
   };
 };
-//  users: state.users,
-// loading: state.isLoading
 const mapDispatchToProps = dispatch => {
   return {
     onLoadUsersComplete: users => {
@@ -257,8 +230,14 @@ const mapDispatchToProps = dispatch => {
     onLoadUsersComplete2: users => {
       dispatch(favoriteUsers(users));
     },
-    onLoadUsersComplete3: users => {
+    userToEdit: users => {
       dispatch(editedUsers(users));
+    },
+    getUsersSuccess: users => {
+      dispatch(getUsersSuccess(users))
+    },
+    editedUsers: user => {
+      dispatch(editedUsers(user));
     }
   }
 }

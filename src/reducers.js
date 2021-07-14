@@ -21,7 +21,7 @@ const reducer = (state = initialState, action) => {
       return state.users.map((user) => {
         if (user.id === action.user) {
           return {
-            isLoading: true,
+            isLoading: false,
             ...user,
             ...action.users
           };
@@ -30,17 +30,17 @@ const reducer = (state = initialState, action) => {
         }
       });
     case EDITED_USERS:
-      return state.users.map((users) => {
-        if (users === action.users) {
+      const user = state.users.map((user) => {
+        if (user === action.users) {
           return {
-            isLoading: true,
-            users: action.users,
+            user,
           };
         }
-        else {
-          return users;
-        }
-      });
+      })
+      return ({
+        ...state,
+        editedUsers: user
+      })
     case USERS:
       return Object.assign({}, state, {
         isLoading: false,
