@@ -12,12 +12,12 @@ class App extends Component {
     super(props)
     this.state = {
       users: [],
-      isLoading: false,
+      isLoading: true,
       isError: false,
-      editUsers: false,
+      enableEdit: false,
       userToEdit: {},
-      Edit: false,
-      user: {},
+      //Edit: false,
+      //user: {},
     };
     this.onChange = this.onChange.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -60,7 +60,7 @@ class App extends Component {
             {user.favorite ? <span class="glyphicon">&#xe005;</span> : 'Add to favorite'}
           </td>
           <td>
-            <Button variant="info" onClick={() => this.userToEdit(user.id)}>Edit</Button>
+            <Button variant="info" onClick={() => this.editUser(user.id)}>Edit</Button>
             &nbsp;<Button variant="danger" onClick={() => this.deleteUsers(user.id)}>Delete</Button>
             &nbsp;
             <Button variant="success" onClick={() => this.favoriteUsers(user.id)}> Add to Favorite</Button>
@@ -78,23 +78,29 @@ class App extends Component {
   }
 
 
-  editedUsers = (userid) => {
+  handleSave = () => {
     const { users } = this.state;
+    const currentUser = users.findIndex((user => this.state.userToEdit.id === user.id))
+    users.splice(currentUser, 1, this.state.userToEdit)
+    console.log("current user: " + currentUser)
     this.setState({
-      users: users.find((user => user.id === user.id))
+      ...this.state,
+      users: users,
+      enableEdit: false,
     })
   }
 
 
-  userToEdit = id => {
+  editUser = id => {
     const { users } = this.state;
     this.setState({
       users: users.find((user => user.id === id))
     })
     const user = users.find((user => user.id === id))
-    user.edit = true
     this.setState({
-      editedUsers: users,
+      ...this.state,
+      enableEdit: true,
+      userToEdit: user
     })
   }
 
@@ -113,14 +119,11 @@ class App extends Component {
       users: users
     })
   }
-  handleChange(e) {
-    const target = e.target;
-    const value = e.value
-    //  const users = e.target.users;
 
+  handleChange(e) {
     this.setState({
       ...this.state,
-      userToEdit: { ...this.state.userToEdit, [target.name]: value }
+      userToEdit: { ...this.state.userToEdit, [e.target.name]: e.target.value }
       //  [users]: value,
       //  editedUsers: users
     });
@@ -139,7 +142,7 @@ class App extends Component {
       return <div>Error</div>
     }
 
-    return users.length > 0
+    return !this.state.enableEdit
       ? (
         <table id="t01">
           <thead>
@@ -158,7 +161,8 @@ class App extends Component {
             <Form.Label>ID</Form.Label>
             <Form.Control
               type="text"
-              value={this.state.users.id}
+              name="id"
+              value={this.state.userToEdit.id}
               required
               onChange={this.handleChange}
             />
@@ -167,16 +171,18 @@ class App extends Component {
             <Form.Label>Name</Form.Label>
             <Form.Control
               type="text"
-              value={this.state.users.name}
+              name='name'
+              value={this.state.userToEdit.name}
               required
               onChange={this.handleChange}
             />
           </Form.Group>
           <Form.Group>
-            <Form.Label>userName</Form.Label>
+            <Form.Label>Username</Form.Label>
             <Form.Control
               type="text"
-              value={this.state.users.username}
+              name='username'
+              value={this.state.userToEdit.username}
               required
               onChange={this.handleChange}
             />
@@ -185,7 +191,8 @@ class App extends Component {
             <Form.Label>Email</Form.Label>
             <Form.Control
               type="text"
-              value={this.state.users.email}
+              name='email'
+              value={this.state.userToEdit.email}
               required
               onChange={this.handleChange}
             />
@@ -194,7 +201,8 @@ class App extends Component {
             <Form.Label>Phone</Form.Label>
             <Form.Control
               type="text"
-              value={this.state.users.phone}
+              name='phone'
+              value={this.state.userToEdit.phone}
               required
               onChange={this.handleChange}
             />
@@ -203,12 +211,13 @@ class App extends Component {
             <Form.Label>Website</Form.Label>
             <Form.Control
               type="text"
-              value={this.state.users.website}
+              name='website'
+              value={this.state.userToEdit.website}
               required
               onChange={this.handleChange}
             />
           </Form.Group>
-          <Button variant="success" type="submit">Save</Button>
+          <Button variant="success" onClick={this.handleSave}>Save</Button>
         </div>
       )
   }
